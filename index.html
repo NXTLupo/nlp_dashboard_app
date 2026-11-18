@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>NLP Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=DM+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&display=swap">
+<style>
+/* Layout: a reading sheet. Cool paper, pen-blue labels and a highlighter band (the same mark the app's word modal draws). Each section below the hero is one drawn mechanism with a caption. */
+:root {
+  --paper: #EDF0F3;
+  --panel: #F8FAFB;
+  --sheet: #FFFFFF;
+  --wash: #E2E8EE;
+  --ink: #1A2230;
+  --muted: #566273;
+  --line: #C3CDD7;
+  --rule: #DCE3EA;
+  --pen: #2A5B8E;
+  --hl: #F5DF6E;
+  --pos: #2C7848;
+  --neg: #AE3F38;
+  --neu: #7D8794;
+  --neu-fill: #B5BEC8;
+  --pos-soft: #D5ECDE;
+  --neg-soft: #F5DAD6;
+  --code-bg: #17202B;
+  --code-fg: #E2E8EF;
+  --code-c: #8E9BAB;
+  --display: "Literata", "Iowan Old Style", Georgia, serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111519; --panel: #161B21; --sheet: #1C232C; --wash: #232C37; --ink: #E3E8EE; --muted: #9AA6B4;
+  --line: #3A4656; --rule: #29323E; --pen: #8DB5E3; --hl: #61561B; --pos: #74C495; --neg: #EC9086;
+  --neu: #8D98A6; --neu-fill: #4D5867; --pos-soft: #1F3A2B; --neg-soft: #432624; --code-bg: #0B0F14;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #111519; --panel: #161B21; --sheet: #1C232C; --wash: #232C37; --ink: #E3E8EE; --muted: #9AA6B4;
+  --line: #3A4656; --rule: #29323E; --pen: #8DB5E3; --hl: #61561B; --pos: #74C495; --neg: #EC9086;
+  --neu: #8D98A6; --neu-fill: #4D5867; --pos-soft: #1F3A2B; --neg-soft: #432624; --code-bg: #0B0F14;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--body); }
+.wrap { max-width: 1280px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+section { padding-block: 60px; border-top: 1px solid var(--line); }
+h1, h2 { font-family: var(--display); font-weight: 600; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-size: clamp(27px, 3.2vw, 38px); line-height: 1.12; max-width: 30ch; }
+p { margin: 0; }
+.kicker { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--pen); }
+.intro { display: grid; gap: 12px; }
+.intro p { color: var(--muted); max-width: 70ch; }
+code { font-family: var(--mono); font-size: .88em; }
+mark { color: inherit; background: linear-gradient(transparent 14%, var(--hl) 14% 90%, transparent 90%); padding: 0 .1em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+
+/* Hero */
+.hero { background-color: var(--sheet); background-image: repeating-linear-gradient(180deg, transparent 0 31px, var(--rule) 31px 32px); }
+.hero .wrap { padding-block: 56px 48px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr); gap: 48px; align-items: center; }
+.hero h1 { font-size: clamp(48px, 6.4vw, 86px); line-height: .96; margin-top: 16px; }
+.hero .lead { margin-top: 20px; font-size: 18.5px; line-height: 1.55; max-width: 46ch; }
+.facts { margin-top: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; max-width: 560px; }
+.fact { border-top: 2px solid var(--ink); padding-top: 8px; background: var(--sheet); }
+.fact span { display: block; font: 500 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fact b { font-weight: 700; font-size: 15px; line-height: 1.35; display: block; margin-top: 2px; }
+.shot { margin: 0; }
+.frame { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--sheet); }
+.frame .bar { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); font: 500 12px/1 var(--mono); color: var(--muted); }
+.frame .bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.frame img { display: block; width: 100%; height: auto; }
+.shot figcaption { font-size: 13.5px; color: var(--muted); margin-top: 10px; max-width: 72ch; background: var(--sheet); }
+@media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .facts { grid-template-columns: 1fr; } }
+
+/* Drawn diagrams */
+figure.diagram { margin: 30px 0 0; }
+.scroll { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
+.scroll svg { display: block; width: 100%; min-width: 980px; height: auto; }
+figure.diagram figcaption { color: var(--muted); font-size: 14px; margin-top: 12px; max-width: 84ch; }
+.d text { font-family: var(--body); font-size: 13px; fill: var(--ink); }
+.d .t { font-family: var(--display); font-size: 17px; font-weight: 600; }
+.d .t15 { font-size: 15px; }
+.d .k { font-family: var(--mono); font-size: 11px; fill: var(--pen); letter-spacing: .04em; }
+.d .m { fill: var(--muted); font-size: 12.5px; }
+.d .lab { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.d .key { font-family: var(--mono); font-size: 11px; fill: var(--ink); }
+.d .keyp { font-family: var(--mono); font-size: 11.5px; fill: var(--pen); }
+.d .fn { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+.d .fn.off { fill: var(--muted); }
+.d .lab.ok { fill: var(--pos); }
+.d .lib { font-weight: 700; font-size: 13.5px; }
+.d .spec { font-size: 12.5px; }
+.d .chipt { font-family: var(--mono); font-size: 11px; }
+.d .ctitle { font-size: 12px; font-weight: 700; }
+.d .tlab { font-size: 11px; fill: var(--muted); }
+.d .mtitle { font-size: 13px; font-weight: 700; }
+.d .ex { font-size: 12px; }
+.d .w14 { font-size: 14px; } .d .w15 { font-size: 15px; } .d .w17 { font-size: 17px; } .d .w20 { font-size: 20px; }
+.d .pos { fill: var(--pos); } .d .neg { fill: var(--neg); } .d .neu { fill: var(--neu); }
+.d .box { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.2; }
+.d .hot { fill: var(--sheet); stroke: var(--pen); stroke-width: 2.4; }
+.d .soft { fill: var(--sheet); stroke: var(--line); stroke-width: 1; }
+.d .pill { fill: var(--wash); stroke: var(--line); stroke-width: 1; }
+.d .region { fill: var(--paper); }
+.d .wash { fill: var(--wash); }
+.d .edge { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+.d .ah { fill: var(--ink); }
+.d .gl { stroke: var(--line); stroke-width: 1; }
+.d .bar { fill: var(--line); }
+.d .val { fill: var(--pen); }
+.d .hl { fill: var(--hl); }
+.d .dot-on { fill: var(--pos); }
+.d .dot-off { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+.d .chip-pos { fill: var(--pos-soft); stroke: var(--pos); stroke-width: 1; }
+.d .chip-neg { fill: var(--neg-soft); stroke: var(--neg); stroke-width: 1; }
+.d .b-neu { fill: var(--neu-fill); } .d .b-pos { fill: var(--pos); }
+.d .s-neg { fill: var(--neg); } .d .s-neu { fill: var(--neu); } .d .s-pos { fill: var(--pos); }
+
+/* Notes beside diagrams */
+.notes { margin-top: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.note { display: grid; gap: 6px; align-content: start; border-left: 3px solid var(--hl); padding-left: 14px; }
+.note b { font: 600 18px/1.2 var(--display); }
+.note p { font-size: 15px; color: var(--muted); }
+@media (max-width: 860px) { .notes { grid-template-columns: 1fr; } }
+
+/* Run */
+.starts { margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
+.start { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--sheet); }
+.start header { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.start header b { font: 600 19px/1.1 var(--display); }
+.start header span { font: 500 12px/1 var(--mono); color: var(--pen); }
+pre { margin: 0; padding: 16px; background: var(--code-bg); color: var(--code-fg); font: 400 12.5px/1.7 var(--mono); overflow-x: auto; }
+pre .c { color: var(--code-c); }
+footer { padding-block: 26px 44px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+</style>
+
+<header class="hero" id="hero">
+  <div class="wrap">
+    <div>
+      <span class="kicker">Open-source text analysis · FastAPI</span>
+      <h1>NLP Dashboard</h1>
+      <p class="lead">An analyst puts a folder of PDFs, Word files, text, CSV and JSON into one ZIP, uploads it, and gets a single page with paragraph sentiment, a short machine-written summary, topic phrases and a word chart where <mark>each word opens the paragraphs it came from</mark>.</p>
+      <div class="facts">
+        <div class="fact"><span>Sentiment</span><b>DistilBERT SST-2, scored per paragraph</b></div>
+        <div class="fact"><span>Summaries</span><b>DistilBART CNN on 800-character chunks</b></div>
+        <div class="fact"><span>Topics and words</span><b>scikit-learn NMF, NLTK word counts</b></div>
+        <div class="fact"><span>Runs on</span><b>FastAPI and Plotly.js, no API keys</b></div>
+      </div>
+    </div>
+    <figure class="shot">
+      <div class="frame">
+        <div class="bar"><i></i><i></i><i></i><span>GET /dashboard</span></div>
+        <img src="charts.jpg" width="1440" height="900" alt="The dashboard's topic bar chart beside its word chart, with words in grey, green and red at different sizes">
+      </div>
+      <figcaption>Topic bars and word chart from a local run on the README's sample ZIP: reviews of a fictional bank app, a fraud team's weekly notes and a support-ticket CSV. Words land at random positions, which is why some overlap.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<main>
+<section id="upload">
+  <div class="wrap">
+    <div class="intro">
+      <span class="kicker">Upload</span>
+      <h2>What happens to an uploaded file</h2>
+      <p>The upload form posts one ZIP to <code>POST /zip</code>. The router extracts five file types, and a reader chosen by file extension turns each file into a list of paragraphs before any model sees the text.</p>
+    </div>
+    <figure class="diagram">
+      <div class="scroll">
+        <svg class="d" viewBox="0 0 1240 550" role="img" aria-label="The browser upload form posts a ZIP to POST /zip in upload.py, which saves it to a temp folder and extracts only PDF, Word, text, CSV and JSON entries. file_parser.py walks the folder and passes each path to text_extractor.py, which picks PyMuPDF, python-docx, a plain read, pandas or json by extension. The paragraph lists go to data_cleaner.py, which trims whitespace and drops empty paragraphs before the models run.">
+          <defs><marker id="u1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+
+          <rect class="box" x="10" y="56" width="176" height="104" rx="3"/>
+          <text class="k" x="24" y="80">INDEX.HTML</text>
+          <text class="t" x="24" y="104">Upload form</text>
+          <text class="m" x="24" y="126">file input, .zip only</text>
+          <text class="m" x="24" y="144">app.js checks the name</text>
+
+          <line class="edge" x1="186" y1="108" x2="272" y2="108" marker-end="url(#u1)"/>
+          <text class="lab" x="231" y="86" text-anchor="middle">ZIP file,</text>
+          <text class="lab" x="231" y="98" text-anchor="middle">multipart</text>
+
+          <rect class="box" x="276" y="56" width="214" height="104" rx="3"/>
+          <text class="k" x="290" y="80">ROUTERS/UPLOAD.PY</text>
+          <text class="t" x="290" y="104">POST /zip</text>
+          <text class="m" x="290" y="126">not a .zip name: 400 error</text>
+          <text class="m" x="290" y="144">saves to temp_&lt;uuid&gt;/</text>
+
+          <line class="edge" x1="490" y1="108" x2="576" y2="108" marker-end="url(#u1)"/>
+          <text class="lab" x="533" y="86" text-anchor="middle">entry</text>
+          <text class="lab" x="533" y="98" text-anchor="middle">names</text>
+
+          <rect class="box" x="580" y="30" width="340" height="170" rx="3"/>
+          <text class="k" x="596" y="54">ENTRY FILTER</text>
+          <circle class="dot-on" cx="602" cy="76" r="4.5"/><text class="fn" x="616" y="80">app_reviews.txt</text><text class="lab ok" x="904" y="80" text-anchor="end">kept</text>
+          <circle class="dot-on" cx="602" cy="100" r="4.5"/><text class="fn" x="616" y="104">team_notes.txt</text><text class="lab ok" x="904" y="104" text-anchor="end">kept</text>
+          <circle class="dot-on" cx="602" cy="124" r="4.5"/><text class="fn" x="616" y="128">support_tickets.csv</text><text class="lab ok" x="904" y="128" text-anchor="end">kept</text>
+          <circle class="dot-off" cx="602" cy="148" r="4.5"/><text class="fn off" x="616" y="152">__MACOSX/._app_reviews.txt</text><text class="lab" x="904" y="152" text-anchor="end">ignore list</text>
+          <circle class="dot-off" cx="602" cy="172" r="4.5"/><text class="fn off" x="616" y="176">logo.png</text><text class="lab" x="904" y="176" text-anchor="end">type not kept</text>
+
+          <line class="edge" x1="920" y1="108" x2="1006" y2="108" marker-end="url(#u1)"/>
+          <text class="lab" x="963" y="86" text-anchor="middle">kept</text>
+          <text class="lab" x="963" y="98" text-anchor="middle">files</text>
+
+          <rect class="box" x="1010" y="56" width="220" height="104" rx="3"/>
+          <text class="k" x="1024" y="80">UTILS/FILE_PARSER.PY</text>
+          <text class="t" x="1024" y="104">Walk the folder</text>
+          <text class="m" x="1024" y="126">os.walk, skips the .zip</text>
+          <text class="m" x="1024" y="144">keys each file by name</text>
+
+          <line class="edge" x1="1120" y1="160" x2="1120" y2="236" marker-end="url(#u1)"/>
+          <text class="lab" x="1128" y="194">one path</text>
+          <text class="lab" x="1128" y="206">at a time</text>
+
+          <rect class="hot" x="1010" y="240" width="220" height="260" rx="3"/>
+          <text class="k" x="1024" y="264">UTILS/TEXT_EXTRACTOR.PY</text>
+          <text class="t" x="1024" y="290">Pick a reader</text>
+          <text class="m" x="1024" y="312">by file extension; each</text>
+          <text class="m" x="1024" y="330">returns a paragraph list</text>
+          <text class="k" x="1024" y="368">BLANK LINES SPLIT</text>
+          <rect class="soft" x="1024" y="380" width="84" height="106" rx="2"/>
+          <rect class="bar" x="1034" y="392" width="62" height="4" rx="1"/><rect class="bar" x="1034" y="400" width="58" height="4" rx="1"/><rect class="bar" x="1034" y="408" width="44" height="4" rx="1"/>
+          <rect class="bar" x="1034" y="426" width="62" height="4" rx="1"/><rect class="bar" x="1034" y="434" width="36" height="4" rx="1"/>
+          <rect class="bar" x="1034" y="452" width="62" height="4" rx="1"/><rect class="bar" x="1034" y="460" width="60" height="4" rx="1"/><rect class="bar" x="1034" y="468" width="30" height="4" rx="1"/>
+          <text class="lab" x="1124" y="406">¶ 1</text>
+          <text class="lab" x="1124" y="436">¶ 2</text>
+          <text class="lab" x="1124" y="466">¶ 3</text>
+
+          <rect class="soft" x="570" y="248" width="350" height="40" rx="2"/>
+          <text class="lib" x="586" y="273">PyMuPDF</text><text class="m" x="700" y="273">page text, split at blank lines</text>
+          <rect class="soft" x="570" y="298" width="350" height="40" rx="2"/>
+          <text class="lib" x="586" y="323">python-docx</text><text class="m" x="700" y="323">one per Word paragraph</text>
+          <rect class="soft" x="570" y="348" width="350" height="40" rx="2"/>
+          <text class="lib" x="586" y="373">open(), UTF-8</text><text class="m" x="700" y="373">split at blank lines</text>
+          <rect class="soft" x="570" y="398" width="350" height="40" rx="2"/>
+          <text class="lib" x="586" y="423">pandas</text><text class="m" x="700" y="423">one line per CSV row</text>
+          <rect class="soft" x="570" y="448" width="350" height="40" rx="2"/>
+          <text class="lib" x="586" y="473">json</text><text class="m" x="700" y="473">one per list item or object</text>
+
+          <line class="edge" x1="1010" y1="268" x2="924" y2="268" marker-end="url(#u1)"/><text class="lab" x="967" y="258" text-anchor="middle">.pdf</text>
+          <line class="edge" x1="1010" y1="318" x2="924" y2="318" marker-end="url(#u1)"/><text class="lab" x="967" y="308" text-anchor="middle">.docx</text>
+          <line class="edge" x1="1010" y1="368" x2="924" y2="368" marker-end="url(#u1)"/><text class="lab" x="967" y="358" text-anchor="middle">.txt</text>
+          <line class="edge" x1="1010" y1="418" x2="924" y2="418" marker-end="url(#u1)"/><text class="lab" x="967" y="408" text-anchor="middle">.csv</text>
+          <line class="edge" x1="1010" y1="468" x2="924" y2="468" marker-end="url(#u1)"/><text class="lab" x="967" y="458" text-anchor="middle">.json</text>
+
+          <line class="edge" x1="540" y1="268" x2="540" y2="468"/>
+          <line class="edge" x1="540" y1="268" x2="570" y2="268"/><line class="edge" x1="540" y1="318" x2="570" y2="318"/><line class="edge" x1="540" y1="368" x2="570" y2="368"/><line class="edge" x1="540" y1="418" x2="570" y2="418"/><line class="edge" x1="540" y1="468" x2="570" y2="468"/>
+          <line class="edge" x1="540" y1="368" x2="404" y2="368" marker-end="url(#u1)"/>
+          <text class="lab" x="472" y="346" text-anchor="middle">file name</text>
+          <text class="lab" x="472" y="358" text-anchor="middle">→ paragraphs</text>
+
+          <rect class="box" x="200" y="304" width="200" height="128" rx="3"/>
+          <text class="k" x="214" y="328">UTILS/DATA_CLEANER.PY</text>
+          <text class="t" x="214" y="352">Clean the text</text>
+          <text class="m" x="214" y="374">trim, collapse spaces,</text>
+          <text class="m" x="214" y="392">drop empty paragraphs</text>
+          <text class="m" x="214" y="410">first step of NLPPipeline</text>
+
+          <line class="edge" x1="300" y1="432" x2="300" y2="486" marker-end="url(#u1)"/>
+          <text class="lab" x="308" y="463">cleaned paragraphs, per file</text>
+          <rect class="pill" x="200" y="490" width="200" height="44" rx="22"/>
+          <text x="300" y="517" text-anchor="middle">To the models below</text>
+        </svg>
+      </div>
+      <figcaption>The router filters entries by name before it extracts anything, so a .png or a macOS resource file never reaches a reader. The three kept files are the README's sample corpus; the two skipped entries show the filter at work. <code>upload.py</code> deletes <code>temp_&lt;uuid&gt;/</code> in a <code>finally</code> block whether the pipeline succeeds or fails. Files are keyed by name alone, so when two folders each hold a <code>notes.txt</code>, the second one read replaces the first.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="models">
+  <div class="wrap">
+    <div class="intro">
+      <span class="kicker">Models</span>
+      <h2>Which model produces each result</h2>
+      <p><code>NLPPipeline.process()</code> hands the cleaned paragraphs to four producers. Sentiment is scored per paragraph. The summarizer and the topic modeler each run once per file and again on all files combined, and the word counts cover the combined text only.</p>
+    </div>
+    <figure class="diagram">
+      <div class="scroll">
+        <svg class="d" viewBox="0 0 1240 500" role="img" aria-label="Cleaned paragraphs feed four producers. DistilBERT SST-2 labels each paragraph POSITIVE or NEGATIVE with a signed score. DistilBART CNN summarizes 800-character chunks into Key Findings, Implications and Recommendations. TF-IDF and NMF in scikit-learn join each component's top four terms into topic phrases. NLTK counts words and phrases on a 0 to 100 scale. All results go into the in-memory PIPELINE_RESULTS dict.">
+          <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+
+          <rect class="box" x="10" y="30" width="160" height="448" rx="3"/>
+          <text class="k" x="24" y="54">FROM DATA_CLEANER</text>
+          <text class="t" x="24" y="80">Cleaned</text>
+          <text class="t" x="24" y="102">paragraphs</text>
+          <text class="lab" x="24" y="138">app_reviews.txt</text>
+          <rect class="bar" x="24" y="148" width="120" height="4" rx="1"/><rect class="bar" x="24" y="156" width="108" height="4" rx="1"/><rect class="bar" x="24" y="164" width="72" height="4" rx="1"/>
+          <rect class="bar" x="24" y="178" width="116" height="4" rx="1"/><rect class="bar" x="24" y="186" width="90" height="4" rx="1"/>
+          <text class="lab" x="24" y="222">team_notes.txt</text>
+          <rect class="bar" x="24" y="232" width="120" height="4" rx="1"/><rect class="bar" x="24" y="240" width="100" height="4" rx="1"/><rect class="bar" x="24" y="248" width="60" height="4" rx="1"/>
+          <rect class="bar" x="24" y="262" width="110" height="4" rx="1"/><rect class="bar" x="24" y="270" width="84" height="4" rx="1"/>
+          <text class="lab" x="24" y="306">support_tickets.csv</text>
+          <rect class="bar" x="24" y="316" width="96" height="4" rx="1"/><rect class="bar" x="24" y="326" width="104" height="4" rx="1"/><rect class="bar" x="24" y="336" width="88" height="4" rx="1"/><rect class="bar" x="24" y="346" width="100" height="4" rx="1"/>
+          <line class="gl" x1="24" y1="372" x2="156" y2="372"/>
+          <text class="m" x="24" y="396">per file, and</text>
+          <text class="m" x="24" y="414">all files combined</text>
+
+          <line class="edge" x1="170" y1="80" x2="276" y2="80" marker-end="url(#m1)"/>
+          <text class="lab" x="225" y="58" text-anchor="middle">each</text><text class="lab" x="225" y="70" text-anchor="middle">paragraph</text>
+          <line class="edge" x1="170" y1="196" x2="276" y2="196" marker-end="url(#m1)"/>
+          <text class="lab" x="225" y="174" text-anchor="middle">joined</text><text class="lab" x="225" y="186" text-anchor="middle">text</text>
+          <line class="edge" x1="170" y1="312" x2="276" y2="312" marker-end="url(#m1)"/>
+          <text class="lab" x="225" y="290" text-anchor="middle">paragraph</text><text class="lab" x="225" y="302" text-anchor="middle">list</text>
+          <line class="edge" x1="170" y1="428" x2="276" y2="428" marker-end="url(#m1)"/>
+          <text class="lab" x="225" y="406" text-anchor="middle">all text,</text><text class="lab" x="225" y="418" text-anchor="middle">lowercased</text>
+
+          <rect class="box" x="280" y="30" width="260" height="100" rx="3"/>
+          <text class="k" x="294" y="54">MODELS/SENTIMENT_ANALYZER.PY</text>
+          <text class="t" x="294" y="78">DistilBERT SST-2</text>
+          <text class="m" x="294" y="100">transformers sentiment pipeline</text>
+          <text class="m" x="294" y="118">over 512 tokens: 256-token pieces</text>
+
+          <rect class="box" x="280" y="146" width="260" height="100" rx="3"/>
+          <text class="k" x="294" y="170">MODELS/SUMMARIZER.PY</text>
+          <text class="t" x="294" y="194">DistilBART CNN 12-6</text>
+          <text class="m" x="294" y="216">sshleifer/distilbart-cnn-12-6</text>
+          <text class="m" x="294" y="234">800-char chunks, 15 to 40 tokens</text>
+
+          <rect class="box" x="280" y="262" width="260" height="100" rx="3"/>
+          <text class="k" x="294" y="286">MODELS/TOPIC_MODELER.PY</text>
+          <text class="t" x="294" y="310">TF-IDF + NMF</text>
+          <text class="m" x="294" y="332">scikit-learn, 1 to 3 word n-grams</text>
+          <text class="m" x="294" y="350">5 components, top 4 terms each</text>
+
+          <rect class="box" x="280" y="378" width="260" height="100" rx="3"/>
+          <text class="k" x="294" y="402">BUILD_WORDCLOUD_DATA()</text>
+          <text class="t" x="294" y="426">NLTK word counts</text>
+          <text class="m" x="294" y="448">word_tokenize minus stopwords</text>
+          <text class="m" x="294" y="466">words 0 to 100, phrases 0 to 75</text>
+
+          <line class="edge" x1="540" y1="80" x2="636" y2="80" marker-end="url(#m1)"/>
+          <text class="lab" x="590" y="58" text-anchor="middle">label +</text><text class="lab" x="590" y="70" text-anchor="middle">score</text>
+          <line class="edge" x1="540" y1="196" x2="636" y2="196" marker-end="url(#m1)"/>
+          <text class="lab" x="590" y="174" text-anchor="middle">summary</text><text class="lab" x="590" y="186" text-anchor="middle">text</text>
+          <line class="edge" x1="540" y1="312" x2="636" y2="312" marker-end="url(#m1)"/>
+          <text class="lab" x="590" y="290" text-anchor="middle">topic</text><text class="lab" x="590" y="302" text-anchor="middle">phrases</text>
+          <line class="edge" x1="540" y1="428" x2="636" y2="428" marker-end="url(#m1)"/>
+          <text class="lab" x="590" y="406" text-anchor="middle">term →</text><text class="lab" x="590" y="418" text-anchor="middle">score</text>
+
+          <rect class="soft" x="640" y="30" width="280" height="100" rx="3"/>
+          <text class="k" x="656" y="52">ONE LABEL PER PARAGRAPH</text>
+          <rect class="bar" x="656" y="73" width="110" height="6" rx="1"/>
+          <rect class="chip-pos" x="784" y="66" width="120" height="20" rx="10"/><text class="chipt pos" x="844" y="80" text-anchor="middle">POSITIVE +score</text>
+          <rect class="bar" x="656" y="103" width="96" height="6" rx="1"/>
+          <rect class="chip-neg" x="784" y="96" width="120" height="20" rx="10"/><text class="chipt neg" x="844" y="110" text-anchor="middle">NEGATIVE −score</text>
+
+          <rect class="soft" x="640" y="146" width="280" height="100" rx="3"/>
+          <text class="k" x="656" y="168">ONE TEXT BLOCK</text>
+          <text class="spec" x="656" y="192">Key Findings:</text><rect class="bar" x="772" y="187" width="126" height="5" rx="1"/>
+          <text class="spec" x="656" y="213">Implications:</text><rect class="bar" x="772" y="208" width="104" height="5" rx="1"/>
+          <text class="spec" x="656" y="234">Recommendations:</text><rect class="bar" x="772" y="229" width="86" height="5" rx="1"/>
+
+          <rect class="soft" x="640" y="262" width="280" height="100" rx="3"/>
+          <text class="k" x="656" y="284">FROM THE SAMPLE RUN</text>
+          <rect class="pill" x="656" y="294" width="184" height="22" rx="11"/><text class="spec" x="668" y="309">travel card phone feature</text>
+          <rect class="pill" x="656" y="324" width="172" height="22" rx="11"/><text class="spec" x="668" y="339">new new payee payee add</text>
+
+          <rect class="soft" x="640" y="378" width="280" height="100" rx="3"/>
+          <text class="k" x="656" y="400">TERM AND SCORE, SAMPLE RUN</text>
+          <text class="fn" x="656" y="428">fraud</text>
+          <rect class="bar" x="708" y="419" width="150" height="10" rx="2"/>
+          <rect class="val" x="708" y="419" width="133" height="10" rx="2"/>
+          <text class="lab" x="868" y="428">88.89</text>
+          <text class="m" x="656" y="456">top 50 terms, 0 to 100 scale</text>
+
+          <line class="edge" x1="920" y1="80" x2="1036" y2="80" marker-end="url(#m1)"/>
+          <text class="lab" x="980" y="70" text-anchor="middle">per file</text>
+          <line class="edge" x1="920" y1="196" x2="1036" y2="196" marker-end="url(#m1)"/>
+          <text class="lab" x="980" y="174" text-anchor="middle">per file and</text><text class="lab" x="980" y="186" text-anchor="middle">all combined</text>
+          <line class="edge" x1="920" y1="312" x2="1036" y2="312" marker-end="url(#m1)"/>
+          <text class="lab" x="980" y="290" text-anchor="middle">per file and</text><text class="lab" x="980" y="302" text-anchor="middle">all combined</text>
+          <line class="edge" x1="920" y1="428" x2="1036" y2="428" marker-end="url(#m1)"/>
+          <text class="lab" x="980" y="406" text-anchor="middle">all files</text><text class="lab" x="980" y="418" text-anchor="middle">combined</text>
+
+          <rect class="hot" x="1040" y="30" width="190" height="448" rx="3"/>
+          <text class="k" x="1054" y="54">LOG_STORE.PY</text>
+          <text class="t t15" x="1054" y="78">PIPELINE_RESULTS</text>
+          <text class="m" x="1054" y="98">a module-level dict</text>
+          <line class="gl" x1="1054" y1="112" x2="1216" y2="112"/>
+          <text class="key" x="1054" y="136">documents</text>
+          <text class="lab" x="1066" y="156">[file name]</text>
+          <text class="key" x="1078" y="176">cleaned_paragraphs</text>
+          <text class="key" x="1078" y="196">paragraph_sentiments</text>
+          <text class="key" x="1078" y="216">paragraph_topics</text>
+          <text class="key" x="1078" y="236">summary</text>
+          <text class="key" x="1054" y="272">global_summary</text>
+          <text class="key" x="1054" y="292">global_topics</text>
+          <text class="key" x="1054" y="312">global_wordcloud_data</text>
+          <line class="gl" x1="1054" y1="340" x2="1216" y2="340"/>
+          <text class="m" x="1054" y="432">held in memory,</text>
+          <text class="m" x="1054" y="450">gone after a restart</text>
+        </svg>
+      </div>
+      <figcaption><code>upload.py</code> builds a new <code>NLPPipeline</code> for every upload, so both Hugging Face models load from disk on each request and the browser waits until the last step finishes. DistilBERT SST-2 has only POSITIVE and NEGATIVE labels, so no paragraph ever comes back neutral. The two topic phrases and the "fraud" score are real output from the README's sample run.</figcaption>
+    </figure>
+    <div class="notes">
+      <div class="note"><b>Long paragraphs are split before scoring</b><p><code>SentimentAnalyzer</code> tokenizes each paragraph first. Past 512 tokens it scores 256-token pieces, averages their polarity and keeps the most common label.</p></div>
+      <div class="note"><b>The summary headings come from keywords</b><p>The first three chunk summaries become Key Findings. Chunks that mention words such as "impact" or "result" feed Implications, and chunks with "should" or "recommend" feed Recommendations once the text runs past two chunks.</p></div>
+      <div class="note"><b>Topic phrases are joined terms</b><p>Each NMF component contributes its four highest-weighted terms, joined with spaces. The features include two- and three-word n-grams, so a phrase can repeat words, as "new new payee payee add" does.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="dashboard">
+  <div class="wrap">
+    <div class="intro">
+      <span class="kicker">Dashboard</span>
+      <h2>How the results reach the charts and the word modal</h2>
+      <p><code>POST /zip</code> runs the whole pipeline inside the request, stores the output in a module-level dict and answers with a 303 redirect. The browser's <code>GET /dashboard</code> then reads that dict, scores every topic and word a second time with TextBlob, and sends one HTML page with the chart data embedded as JSON.</p>
+    </div>
+    <figure class="diagram">
+      <div class="scroll">
+        <svg class="d" viewBox="0 0 1240 610" role="img" aria-label="POST /zip stores results in the PIPELINE_RESULTS dict. GET /dashboard in main.py reads it, sorts summary sentences into three cards, adds TextBlob scores and excerpts to each topic and word, and sends one HTML page. The card text arrives as HTML and the chart data as JSON; dashboard.js draws the topic bars and the word chart with Plotly.js, and clicking a word opens a modal of excerpts with the word highlighted.">
+          <defs><marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+
+          <rect class="wash" x="576" y="8" width="656" height="594" rx="8"/>
+          <text class="k" x="592" y="32">BROWSER</text>
+          <text class="k" x="16" y="28">SERVER · ONE FASTAPI PROCESS</text>
+
+          <rect class="box" x="16" y="44" width="190" height="100" rx="3"/>
+          <text class="k" x="30" y="68">ROUTERS/UPLOAD.PY</text>
+          <text class="t" x="30" y="92">POST /zip</text>
+          <text class="m" x="30" y="114">runs the pipeline, then</text>
+          <text class="m" x="30" y="132">303 to /dashboard</text>
+
+          <line class="edge" x1="111" y1="144" x2="111" y2="196" marker-end="url(#b1)"/>
+          <text class="lab" x="119" y="174">results dict</text>
+
+          <path class="box" d="M16,212 v100 a95,12 0 0 0 190,0 v-100"/>
+          <ellipse class="box" cx="111" cy="212" rx="95" ry="12"/>
+          <text class="k" x="30" y="250">LOG_STORE.PY</text>
+          <text class="t t15" x="30" y="274">PIPELINE_RESULTS</text>
+          <text class="m" x="30" y="296">one dict, every visitor</text>
+
+          <line class="edge" x1="111" y1="324" x2="111" y2="380" marker-end="url(#b1)"/>
+          <text class="lab" x="119" y="356">read, clear</text>
+
+          <rect class="soft" x="16" y="384" width="190" height="116" rx="3"/>
+          <text class="k" x="30" y="406">OTHER ENDPOINTS</text>
+          <text class="key" x="30" y="430">GET /analysis-results</text>
+          <text class="m" x="30" y="447">returns it as JSON</text>
+          <text class="key" x="30" y="470">DELETE /clear-results</text>
+          <text class="m" x="30" y="487">empties it and the log</text>
+
+          <line class="edge" x1="206" y1="262" x2="278" y2="262" marker-end="url(#b1)"/>
+          <text class="lab" x="242" y="252" text-anchor="middle">results</text>
+
+          <rect class="hot" x="282" y="150" width="250" height="264" rx="3"/>
+          <text class="k" x="296" y="174">MAIN.PY</text>
+          <text class="t" x="296" y="198">GET /dashboard</text>
+          <line class="gl" x1="296" y1="214" x2="518" y2="214"/>
+          <text class="keyp" x="296" y="234">global_summary</text>
+          <text class="m" x="296" y="252">cut at each period, sorted</text>
+          <text class="m" x="296" y="268">into three cards by keyword</text>
+          <line class="gl" x1="296" y1="280" x2="518" y2="280"/>
+          <text class="keyp" x="296" y="300">global_topics</text>
+          <text class="m" x="296" y="318">TextBlob score, count of</text>
+          <text class="m" x="296" y="334">paragraphs with the phrase</text>
+          <line class="gl" x1="296" y1="344" x2="518" y2="344"/>
+          <text class="keyp" x="296" y="364">global_wordcloud_data</text>
+          <text class="m" x="296" y="382">TextBlob score, up to five</text>
+          <text class="m" x="296" y="398">excerpts per term</text>
+
+          <rect class="box" x="800" y="40" width="420" height="552" rx="6"/>
+          <text class="lab" x="814" y="59">dashboard.html + dashboard.js · Plotly.js from cdn.plot.ly</text>
+          <line class="gl" x1="800" y1="68" x2="1220" y2="68"/>
+
+          <polyline class="edge" points="532,247 640,247 640,114 824,114" marker-end="url(#b1)"/>
+          <text class="lab" x="720" y="104" text-anchor="middle">card text as HTML</text>
+          <polyline class="edge" points="532,312 660,312 660,222 824,222" marker-end="url(#b1)"/>
+          <text class="lab" x="730" y="212" text-anchor="middle">topics_data, JSON</text>
+          <line class="edge" x1="532" y1="379" x2="824" y2="379" marker-end="url(#b1)"/>
+          <text class="lab" x="680" y="369" text-anchor="middle">wordcloud_data, JSON</text>
+
+          <rect class="soft" x="828" y="80" width="118" height="68" rx="2"/><rect class="s-neg" x="828" y="80" width="4" height="68"/>
+          <text class="ctitle" x="840" y="100">Key</text><text class="ctitle" x="840" y="115">Threats</text>
+          <rect class="bar" x="840" y="128" width="90" height="4" rx="1"/><rect class="bar" x="840" y="136" width="64" height="4" rx="1"/>
+          <rect class="soft" x="956" y="80" width="118" height="68" rx="2"/><rect class="s-neu" x="956" y="80" width="4" height="68"/>
+          <text class="ctitle" x="968" y="100">Current</text><text class="ctitle" x="968" y="115">Landscape</text>
+          <rect class="bar" x="968" y="128" width="90" height="4" rx="1"/><rect class="bar" x="968" y="136" width="70" height="4" rx="1"/>
+          <rect class="soft" x="1084" y="80" width="118" height="68" rx="2"/><rect class="s-pos" x="1084" y="80" width="4" height="68"/>
+          <text class="ctitle" x="1096" y="100">Defense</text><text class="ctitle" x="1096" y="115">Strategies</text>
+          <rect class="bar" x="1096" y="128" width="84" height="4" rx="1"/><rect class="bar" x="1096" y="136" width="52" height="4" rx="1"/>
+
+          <rect class="region" x="828" y="160" width="380" height="124" rx="2"/>
+          <text class="k" x="842" y="178">#TOPICS-CHART</text>
+          <text class="tlab" x="1060" y="198" text-anchor="end">alert make fraud alert did make</text><rect class="b-neu" x="1070" y="188" width="100" height="12"/><text class="lab" x="1180" y="198">1</text>
+          <text class="tlab" x="1060" y="216" text-anchor="end">text reported password message</text><rect class="b-neu" x="1070" y="206" width="100" height="12"/><text class="lab" x="1180" y="216">1</text>
+          <text class="tlab" x="1060" y="234" text-anchor="end">business statement export…</text><rect class="b-neu" x="1070" y="224" width="100" height="12"/><text class="lab" x="1180" y="234">1</text>
+          <text class="tlab" x="1060" y="252" text-anchor="end">new new payee payee add</text><rect class="b-pos" x="1070" y="242" width="100" height="12"/><text class="lab" x="1180" y="252">1</text>
+          <text class="tlab" x="1060" y="270" text-anchor="end">travel card phone feature</text><rect class="b-neu" x="1070" y="260" width="100" height="12"/><text class="lab" x="1180" y="270">1</text>
+
+          <rect class="region" x="828" y="298" width="380" height="124" rx="2"/>
+          <text class="k" x="842" y="316">#WORDCLOUD-CHART</text>
+          <text class="w20 pos" x="846" y="350">new payee</text>
+          <text class="w20 neu" x="960" y="350">fraud alert</text>
+          <text class="w14 neu" x="1080" y="344">statement export</text>
+          <text class="w17 neg" x="846" y="388">authorizations</text>
+          <text class="w15 neu" x="986" y="384">travel blocks</text>
+          <text class="w14 neu" x="1100" y="382">chat customer</text>
+          <text class="w14 neu" x="1124" y="410">fraud</text>
+
+          <line class="edge" x1="1141" y1="426" x2="1141" y2="450" marker-end="url(#b1)"/>
+          <text class="lab" x="1153" y="443">click</text>
+
+          <rect class="box" x="828" y="454" width="380" height="124" rx="4"/>
+          <text class="mtitle" x="842" y="476">Word Analysis: "fraud"</text>
+          <text class="lab" x="1194" y="476" text-anchor="end">TextBlob</text>
+          <line class="gl" x1="842" y1="486" x2="1194" y2="486"/>
+          <text class="lab" x="842" y="504">team_notes.txt</text><text class="key" x="1194" y="504" text-anchor="end">0.31</text>
+          <rect class="hl" x="840" y="511" width="33" height="17" rx="2"/>
+          <text class="ex" x="842" y="523">Fraud operations weekly notes. Account takeover…</text>
+          <text class="lab" x="842" y="546">app_reviews.txt</text><text class="key" x="1194" y="546" text-anchor="end">0.21</text>
+          <text class="ex" x="842" y="565">…</text>
+          <rect class="hl" x="853" y="553" width="31" height="17" rx="2"/>
+          <text class="ex" x="855" y="565">fraud alert feature sent a push notification…</text>
+        </svg>
+      </div>
+      <figcaption>Everything the page shows arrives in one HTML response: the card text as markup and the chart data as a JSON block that <code>dashboard.js</code> parses and draws with Plotly.js, loaded from cdn.plot.ly. The word modal lists the excerpts and TextBlob scores that <code>main.py</code> attached on the server. A bar click searches the embedded documents in the browser instead, and that modal is the only place on the page where DistilBERT's paragraph scores appear. In the sample run every bar reads 1: the joined NMF phrases do not occur word for word in the text, so <code>count_topic_frequency</code> falls back to its minimum.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="run">
+  <div class="wrap">
+    <div class="intro">
+      <span class="kicker">Run it</span>
+      <h2>Run it locally on Python 3.11</h2>
+      <p>The pinned <code>numpy==1.26.3</code> and <code>torch==2.2.0</code> have no wheels for Python 3.13. In the README's test on Windows, a fresh install of <code>requirements.txt</code> came to about 1.8 GB, most of it PyTorch.</p>
+    </div>
+    <div class="starts">
+      <div class="start"><header><b>Set up</b><span>Python 3.11</span></header>
+<pre>git clone https://github.com/NXTLupo/nlp_dashboard_app.git
+cd nlp_dashboard_app
+python3.11 -m venv .venv
+source .venv/bin/activate   <span class="c"># Windows: .venv\Scripts\activate</span>
+pip install -r requirements.txt</pre></div>
+      <div class="start"><header><b>Run</b><span>then open 127.0.0.1:8000</span></header>
+<pre><span class="c"># from the repository root: main.py mounts app/static by relative path</span>
+uvicorn app.main:app --reload
+<span class="c"># upload docs/readme/sample_corpus.zip on the page, then:</span>
+curl http://127.0.0.1:8000/analysis-results
+curl -X DELETE http://127.0.0.1:8000/clear-results</pre></div>
+    </div>
+    <div class="notes">
+      <div class="note"><b>The first upload downloads the models</b><p>On the first upload, transformers fetches DistilBERT (about 256 MB) and DistilBART (about 1.2 GB) into the Hugging Face cache, and NLTK fetches its tokenizer and stopword data. With the models cached, the README's test run took about 25 seconds on CPU.</p></div>
+      <div class="note"><b>Document text stays on your machine</b><p>The app needs no API keys. Its outbound requests go to the Hugging Face Hub and the NLTK data server for model files, and the browser loads Plotly.js from cdn.plot.ly, so the charts need an internet connection.</p></div>
+      <div class="note"><b>Known limits</b><p>The app holds one analysis in memory for every visitor and loses it on restart. The page title and card headings describe AI and financial crime for any corpus. As shipped, <code>POST /run-pipeline</code> and <code>GET /results</code> return 500, and <code>GET /download-results</code> returns a URL that 404s.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">NLP Dashboard · github.com/NXTLupo/nlp_dashboard_app</div></footer>
+
+</html>
